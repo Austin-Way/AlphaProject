@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connectify - Search</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .alpha {
+            font-size: 18px;
+        }
+        .nav {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 18px;
+            padding: 5px 0;
+        }
+        .nav a.active {
+            border-bottom: 2px solid #fff;
+        }
+        .search-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #000;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .results {
+            background-color: #111;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .result {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .result:last-child {
+            border-bottom: none;
+        }
+        .result h2 {
+            margin-top: 0;
+            color: #ddd;
+        }
+        .result p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .result a {
+            color: #aaa;
+            text-decoration: none;
+        }
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Connectify</div>
+            <div class="alpha">Alpha</div>
+        </div>
+        <div class="nav">
+            <a href="Search.html" class="active">Search</a>
+            <a href="Profile.html">Profile</a>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Enter keywords to search">
+        </div>
+        <div id="results" class="results">
+            <!-- Search results will be dynamically inserted here -->
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        let allConnections = [];
+
+        // Load all connections when the page loads
+        window.addEventListener('load', () => {
+            fetchConnections();
+        });
+
+        // Search as the user types
+        document.getElementById('searchInput').addEventListener('input', debounce(searchConnections, 300));
+
+        function fetchConnections() {
+            fetch('/get_connections')
+                .then(response => response.json())
+                .then(data => {
+                    allConnections = data;
+                    showMessage(`Loaded ${allConnections.length} connections.`, 'success');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('Error loading connections. Please try again.', 'error');
+                });
+        }
+
+        function searchConnections() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const results = allConnections.filter(connection => {
+                const searchableText = `${connection.yourName} ${connection.connectionName} ${connection.connectionAbout}`.toLowerCase();
+                return searchableText.includes(searchTerm);
+            });
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = '';
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<p>No results found.</p>';
+                return;
+            }
+
+            results.forEach(connection => {
+                const resultElement = document.createElement('div');
+                resultElement.className = 'result';
+                resultElement.innerHTML = `
+                    <h2>${connection.connectionName}</h2>
+                    <p>${connection.connectionAbout}</p>
+                    <p><strong>Submitted by:</strong> ${connection.yourName}</p>
+                    <p><strong>Contact:</strong> <a href="mailto:${connection.yourEmail}">${connection.yourEmail}</a></p>
+                `;
+                resultsContainer.appendChild(resultElement);
+            });
+        }
+
+        function showMessage(message, type) {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = message;
+            messageElement.style.color = type === 'error' ? '#ff6b6b' : '#4ecdc4';
+        }
+
+        // Debounce function to limit how often a function is called
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>
