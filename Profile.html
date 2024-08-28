@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connectify - Profile</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .alpha {
+            font-size: 18px;
+        }
+        .nav {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 18px;
+            padding: 5px 0;
+        }
+        .nav a.active {
+            border-bottom: 2px solid #fff;
+        }
+        .form-container {
+            background-color: #111;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            background-color: #000;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        h2 {
+            margin-top: 0;
+            color: #ddd;
+            text-align: center;
+        }
+        .error {
+            color: #ff6b6b;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Connectify</div>
+            <div class="alpha">Alpha</div>
+        </div>
+        <div class="nav">
+            <a href="Search.html">Search</a>
+            <a href="Profile.html" class="active">Profile</a>
+        </div>
+        <div class="form-container">
+            <h2>Your Info</h2>
+            <form id="connectionForm">
+                <div class="form-group">
+                    <input type="text" id="yourName" placeholder="Your Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="yourEmail" placeholder="Your Email" required>
+                </div>
+                <h2>Your Connection</h2>
+                <div class="form-group">
+                    <input type="text" id="connectionName" placeholder="Connection's Name" required>
+                </div>
+                <div class="form-group">
+                    <textarea id="connectionAbout" placeholder="About Your Connection (min 20 words)" rows="4" required></textarea>
+                    <div id="wordCount" class="error"></div>
+                </div>
+                <button type="submit">Submit Your Connection!</button>
+            </form>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('connectionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const yourName = document.getElementById('yourName').value.trim();
+            const yourEmail = document.getElementById('yourEmail').value.trim();
+            const connectionName = document.getElementById('connectionName').value.trim();
+            const connectionAbout = document.getElementById('connectionAbout').value.trim();
+            
+            // Validation checks (keep the existing validation logic)
+            
+            // Create connection object
+            const connection = {
+                yourName,
+                yourEmail,
+                connectionName,
+                connectionAbout,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Send data to server
+            fetch('/save_connection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(connection),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('Connection saved successfully!', 'success');
+                    this.reset();
+                } else {
+                    showMessage('Error saving connection. Please try again.', 'error');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                showMessage('Error saving connection. Please try again.', 'error');
+            });
+        });
+
+        function showMessage(message, type) {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = message;
+            messageElement.style.color = type === 'error' ? '#ff6b6b' : '#4ecdc4';
+        }
+
+        // Word count display (keep the existing word count logic)
+    </script>
+</body>
+</html>
